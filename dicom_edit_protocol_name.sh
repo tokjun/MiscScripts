@@ -24,9 +24,10 @@ do
     export DEDNEWDESC=$PREFIX$DIRNAME
 
     # Study description
-    #find $dir/* -type f -exec sh -c 'dcmodify -m "(0008,103e)=$DEDNEWDESC" {}' -- {} \;
+    find $dir/* -type f -exec sh -c 'dcmodify -m "(0008,103e)=$DEDNEWDESC" {}' -- {} \;
     # Protocol Name
     find $dir/* -type f -exec sh -c 'dcmodify -m "(0018,1030)=$DEDNEWDESC" {}' -- {} \;
+    rm $dir/*.bak
 
     
 done
