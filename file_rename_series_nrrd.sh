@@ -23,7 +23,6 @@ fi
 
 for (( i=$FIRST_INDEX; i<=$LAST_INDEX; i++ ))
 do
-    DIR="Kidney2echoPETRA21MM3CRYO11000SPKFOV35GRAD9_"$i
     INPUT_PATH=`printf "$ORG_DIR/%d $ORG_PREFIX.nrrd" $i`
     OUTPUT_PATH=`printf "$DST_DIR/$DST_SUFFIX-%03d.nrrd" $i`
     if [ -f "$INPUT_PATH" ]; then
