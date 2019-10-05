@@ -4,7 +4,7 @@
 # Usage:  dicom_extract_by_tag.sh <INPUT_DIR> <DICOM_TAG> <KEY>
 #
 #   Ex)  dicom_extract_by_tag.sh . "0008,103e" "TEMPLATE"
-#
+#   Do not add '/' at the end of <INPUT_DIR>
 
 if [ "$#" -ne 3 ] || ! [ -d "$1" ]; then
   echo "Usage: $0 <INPUT_DIR> <DICOM_TAG> <KEY>" >&2
