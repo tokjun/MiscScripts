@@ -1,28 +1,33 @@
 #! /usr/local/bin/bash
 
 #
-# Usage:  dicom_list_values.sh <INPUT_DIR> <DICOM_TAG>
+# Usage:  dicom_list_values.sh <INPUT_DIR> <depth> <DICOM_TAG>
 #
-#   Ex)  dicom_extract_by_tag.sh . "0008,103e" "0008,0032"
+#   Ex)  dicom_extract_by_tag.sh . 1 "0008,103e" "0008,0032"
 #
 #   This script extract the values for the specified two tags from every file in the foler and list them
 #   Requires Bash > 3.x. on macOS (for associative array)
 
 
-if [ "$#" -ne 3 ] || ! [ -d "$1" ]; then
-  echo "Usage: $0 <INPUT_DIR> <TAG 1> <TAG 2>" >&2
+if [ "$#" -ne 4 ] || ! [ -d "$1" ]; then
+  echo "Usage: $0 <INPUT_DIR> <depth> <TAG 1> <TAG 2>" >&2
   exit 1
 fi
 
 INPUT_DIR=$1
-TAG_1=$2
-TAG_2=$3
+DEPTH=$2
+TAG_1=$3
+TAG_2=$4
 
 cd $INPUT_DIR
 
 echo "Processing $INPUT_DIR ..."
 
-LIST=`find $INPUT_DIR -depth 1 -type f`
+LIST=`find $INPUT_DIR -depth $DEPTH -type f`
+
+if [$LIST == ""]; then
+    LIST=$INPUT_DIR
+fi
 
 for FILE in $LIST
 do

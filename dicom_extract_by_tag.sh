@@ -17,8 +17,6 @@ export DEBDKEY=$3
 
 LIST=`find $INPUT_DIR -depth 1 -type d`
 
-echo $LIST
-
 if [$LIST == ""]; then
     LIST=$INPUT_DIR
 fi
