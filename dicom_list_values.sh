@@ -8,7 +8,6 @@
 #   This script extract the values for the specified two tags from every file in the foler and list them
 #   Requires Bash > 3.x. on macOS (for associative array)
 
-
 if [ "$#" -ne 4 ] || ! [ -d "$1" ]; then
   echo "Usage: $0 <INPUT_DIR> <depth> <TAG 1> <TAG 2>" >&2
   exit 1
@@ -23,18 +22,21 @@ cd $INPUT_DIR
 
 echo "Processing $INPUT_DIR ..."
 
-LIST=`find $INPUT_DIR -depth $DEPTH -type f`
+LIST=`find . -depth $DEPTH -type f`
+PREFIX=$INPUT_DIR
 
 if [$LIST == ""]; then
     LIST=$INPUT_DIR
+    PREFIX=''
 fi
 
-for FILE in $LIST
+for _FILE in $LIST
 do
-    STUDY=`dcmdump +P '0020,0010' $FILE| sed -e 's/.*\[\(.*\)\].*/\1/'`
-    SERIES=`dcmdump +P '0020,0011' $FILE| sed -e 's/.*\[\(.*\)\].*/\1/'`
-    VALUE1=`dcmdump +P $TAG_1 $FILE| sed -e 's/.*\[\(.*\)\].*/\1/'`
-    VALUE2=`dcmdump +P $TAG_2 $FILE| sed -e 's/.*\[\(.*\)\].*/\1/'`
+    FILE="$PREFIX/$_FILE"
+    STUDY=`dcmdump +P '0020,0010' "$FILE"| sed -e 's/.*\[\(.*\)\].*/\1/'`
+    SERIES=`dcmdump +P '0020,0011' "$FILE"| sed -e 's/.*\[\(.*\)\].*/\1/'`
+    VALUE1=`dcmdump +P $TAG_1 "$FILE"| sed -e 's/.*\[\(.*\)\].*/\1/'`
+    VALUE2=`dcmdump +P $TAG_2 "$FILE"| sed -e 's/.*\[\(.*\)\].*/\1/'`
 
     echo $STUDY,$SERIES,$VALUE1,$VALUE2
 done
