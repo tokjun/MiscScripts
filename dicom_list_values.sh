@@ -18,21 +18,17 @@ DEPTH=$2
 TAG_1=$3
 TAG_2=$4
 
-cd $INPUT_DIR
-
 echo "Processing $INPUT_DIR ..."
 
-LIST=`find . -depth $DEPTH -type f`
-PREFIX=$INPUT_DIR
+LIST=`find $INPUT_DIR -depth $DEPTH -type f`
 
 if [$LIST == ""]; then
     LIST=$INPUT_DIR
-    PREFIX=''
 fi
 
 for _FILE in $LIST
 do
-    FILE="$PREFIX/$_FILE"
+    FILE="$_FILE"
     STUDY=`dcmdump +P '0020,0010' "$FILE"| sed -e 's/.*\[\(.*\)\].*/\1/'`
     SERIES=`dcmdump +P '0020,0011' "$FILE"| sed -e 's/.*\[\(.*\)\].*/\1/'`
     VALUE1=`dcmdump +P $TAG_1 "$FILE"| sed -e 's/.*\[\(.*\)\].*/\1/'`
