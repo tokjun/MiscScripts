@@ -12,8 +12,9 @@ def getDICOMAttributes(path, tagNums):
     attrs = []
 
     for tagNum in tagNums:
-        element = dataset[tagNum]
-        attrs.append(element.value)
+        if tagNum in dataset:
+            element = dataset[tagNum]
+            attrs.append(element.value)
     return attrs
 
 def main():
@@ -30,20 +31,27 @@ def main():
     
     args = parser.parse_args()
     srcdir = args.dir
-    output = args.out
+    outputFile = args.out
     tagNums = []
 
-    # Print header
-    linestr = ''
-    for tag in args.tags:
-        linestr = linestr + tag + ","
-    print(linestr[0:-1])
-        
+    f = None
+    if outputFile:
+        f = open(outputFile, "w")
+
     # Convert tag string (e.g. "0020,000E") to tag number (0x0020000E)
     for tag in args.tags:
         tagHexStr = '0x' + tag.replace(',', '')
         tagNum = int(tagHexStr, 16)
         tagNums.append(tagNum)
+
+    # Print header
+    linestr = ''
+    for tag in tagNums:
+        linestr = linestr + hex(tag) + ","
+    if outputFile:
+        f.write(linestr[0:-1] + '\n')
+    else:
+        print(linestr[0:-1])
 
     for root, dirs, files in os.walk(srcdir[0]):
         for file in files:
@@ -53,10 +61,17 @@ def main():
             linestr = ''
             for value in values:
                 linestr = linestr + '%s' % value + ","
-            print(linestr[0:-1])
+            if outputFile:
+                f.write(linestr[0:-1] + '\n')
+            else:
+                if linestr != '':
+                    print(linestr[0:-1])
+                
         if args.recursive == False:
             break
-    
+
+    if outputFile:
+        f.close()
     
 if __name__ == "__main__":
     main()
