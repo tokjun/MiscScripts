@@ -66,12 +66,22 @@ def main():
         tagNum = int(tagHexStr, 16)
         tagDict[tagNum] = pair[1]
 
+    postfix = 0
     for root, dirs, files in os.walk(srcdir[0]):
         for file in files:
             filepath = os.path.join(root, file)
             if matchDICOMAttributes(filepath, tagDict, args.recursive):
-                shutil.copy(filepath, dstdir[0])
+                newfilepath = os.path.join(dstdir[0], file)
+                dstfilepath = ''
+                if os.path.exists(newfilepath):
+                    filename, file_extension = os.path.splitext(file)
+                    newfilename = filename + '_%04d' % postfix + file_extension
+                    postfix = postfix + 1
+                    dstfilepath = os.path.join(dstdir[0], newfilename)
+                else:
+                    dstfilepath = os.path.join(dstdir[0], file)
                 print("Copying: %s" % filepath)
+                shutil.copy(filepath, dstfilepath)
                 
         if args.recursive == False:
             break
