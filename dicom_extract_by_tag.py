@@ -22,18 +22,18 @@ def matchDICOMAttributes(path, tagDict, match):
     for tag in tagDict:
         element = dataset[tag]
         if match:
-            if tagDict[tag] != str(element.value):
-                return False
+            if tagDict[tag] == str(element.value):
+                return True
         else:
             if tagDict[tag] in str(element.value):
-                return False
+                return True
             
-    return True
+    return False
 
 
 def main():
     
-    parser = argparse.ArgumentParser(description='List DICOM attribute values')
+    parser = argparse.ArgumentParser(description='Extract DICOM files based on tags')
     parser.add_argument('tags', metavar='TAG', type=str, nargs='+',
                         help='Pairs of DICOM tags and attributes separated by "=" (e.g. "0020,000E=3" means "if the series number is 3")')
     parser.add_argument('src', metavar='SRC_DIR', type=str, nargs=1,
@@ -70,7 +70,7 @@ def main():
     for root, dirs, files in os.walk(srcdir[0]):
         for file in files:
             filepath = os.path.join(root, file)
-            if matchDICOMAttributes(filepath, tagDict, args.recursive):
+            if matchDICOMAttributes(filepath, tagDict, args.match):
                 newfilepath = os.path.join(dstdir[0], file)
                 dstfilepath = ''
                 if os.path.exists(newfilepath):

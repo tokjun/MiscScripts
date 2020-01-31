@@ -41,6 +41,13 @@ $ dicom_extract_by_tag.py -h
 Some Useful DICOM Tags...
 -------------------------
 
+- General
+  - (0008,103e) : SeriesDescription
+  - (0010,0010) : PatientsName
+  - (0020,0010) : StudyID
+  - (0020,0011) : SeriesNumber
+  - (0020,0037) : ImageOrientationPatient 
+
 - Siemens MR Header
   - (0051,100f) : Coil element (Siemens)
   - (0051,1016) : Real/Imaginal (e.x. "R/DIS2D": real; "P/DIS2D": phase)
