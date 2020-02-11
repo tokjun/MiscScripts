@@ -3,7 +3,7 @@ MiscScripts
 
 Introduction
 ------------
-This repository contains utility scripts for my research activities. I used to make all the scripts in BASH, but have started migrating to Python scripts. BASH scripts are still in the repository just for compatibility, but will be phased out in the future.
+This repository contains utility scripts for my research activities. I used to make all the scripts in Bash, but have started migrating to Python scripts. Bash scripts are still in the repository just for compatibility, but will be phased out in the future.
 
 Installation
 ------------
