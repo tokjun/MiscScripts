@@ -60,7 +60,7 @@ def main():
             values = getDICOMAttributes(os.path.join(root, file), tagNums)
             linestr = ''
             for value in values:
-                linestr = linestr + '%s' % value + ","
+                linestr = linestr + '"%s"' % value + ","
             if outputFile:
                 f.write(linestr[0:-1] + '\n')
             else:

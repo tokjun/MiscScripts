@@ -51,3 +51,11 @@ Some Useful DICOM Tags...
 - Siemens MR Header
   - (0051,100f) : Coil element (Siemens)
   - (0051,1016) : Real/Imaginal (e.x. "R/DIS2D": real; "P/DIS2D": phase)
+
+
+
+Other useful DICMTK commands
+----------------------------
+
+### dcmdump
+Dump all DICOM tags.

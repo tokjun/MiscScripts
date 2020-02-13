@@ -27,7 +27,7 @@ import sys
 
 
 def anonymize(filename, output_filename, new_person_name="anonymous",
-              new_patient_id="id", remove_curves=True, remove_private_tags=True):
+              new_patient_id="id", remove_curves=False, remove_private_tags=False):
     """Replace data element values to partly anonymize a DICOM file.
     Note: completely anonymizing a DICOM file is very complicated; there
     are many things this example code does not address. USE AT YOUR OWN RISK.
@@ -108,20 +108,20 @@ if __name__ == "__main__":
     if args.recursive: # If the recursive option is enabled.
         for root, dirs, files in os.walk(srcdir[0]):
             for file in files:
-                relpath = os.path.relpath(root, dstdir[0])
+                relpath = os.path.relpath(root, srcdir[0])
                 srcfilepath = os.path.join(root, file)
                 dstdirpath = os.path.join(dstdir[0], relpath)
                 dstfilepath = os.path.join(dstdirpath, file)
                 os.makedirs(dstdirpath, exist_ok=True)
                 print("%s -> %s" % (srcfilepath, dstfilepath))
-                anonymize(srcfilepath, dstfilepath)
+                anonymize(srcfilepath, dstfilepath, remove_private_tags=args.private)
     else:             # If the recursive option is disabled
         for file in os.listdir(srcdir[0]):
             if os.path.isfile(os.path.join(srcdir[0], file)):
                 srcfilepath = os.path.join(srcdir[0], file)
                 dstfilepath = os.path.join(dstdir[0], file)
                 print("%s -> %s" % (srcfilepath, dstfilepath))
-                anonymize(srcfilepath, dstfilepath)
+                anonymize(srcfilepath, dstfilepath,  remove_private_tags=args.private)
 
     print("Done.")
 
