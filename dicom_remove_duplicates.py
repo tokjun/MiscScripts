@@ -11,33 +11,33 @@ from pydicom.data import get_testdata_files
 
 
 #
-# Match DICOM attriburtes
+# Count DICOM image - returns the number of times the identical image has been appeard previously
 #
-def matchDICOMAttributes(path, tagDict, match):
+def countDICOMImage(path, taglist, imageCount):
 
-    # When match == True, the attributes must match the dictionary value.
-    # When match == False, the attributes only need to contain the dictionary values
     dataset = pydicom.dcmread(path, specific_tags=None)
 
-    for tag in tagDict:
-        element = dataset[tag]
-        strs = tagDict[tag]
-        if match:
-            for s in strs:
-                if s == str(element.value):
-                    return True
-        else:
-            for s in strs:
-                if s in str(element.value):
-                    return True
-    return False
+    fFirstTime = True
+    
+    attrs = () # Tuple of attributes
+    for tag in taglist:
+        if tag in dataset:
+            element = dataset[tag]
+            attrs = attrs + (str(element.value),)
+    if attrs in imageCount:
+        imageCount[attrs] = imageCount[attrs] + 1
+    else:
+        imageCount[attrs] = 1
+
+    return (imageCount[attrs] - 1)
+
 
 
 def main():
     
-    parser = argparse.ArgumentParser(description='Extract DICOM files based on tags')
-    parser.add_argument('tags', metavar='TAG', type=str, nargs='+',
-                        help='Pairs of DICOM tags and attributes separated by "=" (e.g. "0020,000E=3" means "if the series number is 3")')
+    parser = argparse.ArgumentParser(description='Copy or move DICOM files and remove duplicated images.')
+    parser.add_argument('tags', metavar='TAG', type=str, nargs='*',
+                        help='DICOM tags. (Study Instance UID, Series Instance UID, and Image Instance Number are used in default, )')
     parser.add_argument('src', metavar='SRC_DIR', type=str, nargs=1,
                         help='source directory')
     parser.add_argument('dst', metavar='DST_DIR', type=str, nargs=1,
@@ -56,28 +56,34 @@ def main():
     args = parser.parse_args()
     srcdir = args.src
     dstdir = args.dst
-    tagDict = {}
 
     # Make the destination directory, if it does not exists.
     os.makedirs(dstdir[0], exist_ok=True)
 
-    # Convert tags (e.g. "0020,000E=XXX") to dictionary ( {0x0020000E: XXXX})
+    # The following tags are used to find identical image files in default
+    #   - 0020,000D StudyInstanceUID
+    #   - 0020,000E SeriesInstanceUID
+    #   - 0020,0013 InstanceNumber
+
+    # Default tag list
+    tagStrList = ['0020,000D', '0020,000E',  '0020,0013']
+    taglist = []
+    for tagstr in tagStrList:
+        tagHexStr = '0x' + tagstr.replace(',','')
+        taglist.append(int(tagHexStr, 16))
+        
+    # Add tags specified by the user
     for tag in args.tags:
-        pair = tag.split('=')
-        if len(pair) != 2:
-            sys.exit('ERROR: Invalid argument: %s' % tag)
-        tagHexStr = '0x' + pair[0].replace(',', '')
-        tagNum = int(tagHexStr, 16)
-        if tagNum in tagDict:
-            tagDict[tagNum] = tagDict[tagNum] + (pair[1],)
-        else:
-            tagDict[tagNum] = (pair[1],)
+        tagHexStr = '0x' + tag.replace(',', '')
+        taglist.append(int(tagHexStr, 16))
+
+    imageCounts = {}
 
     postfix = 0
     for root, dirs, files in os.walk(srcdir[0]):
         for file in files:
             filepath = os.path.join(root, file)
-            if matchDICOMAttributes(filepath, tagDict, args.match):
+            if countDICOMImage(filepath, taglist, imageCounts) == 0:
                 newfilepath = os.path.join(dstdir[0], file)
                 dstfilepath = ''
                 if os.path.exists(newfilepath):
@@ -93,9 +99,14 @@ def main():
                 else:
                     print("Copying: %s" % filepath)
                     shutil.copy(filepath, dstfilepath)
+            else:
+                print("Found a duplicated image.")
                 
         if args.recursive == False:
             break
+
     
 if __name__ == "__main__":
     main()
+
+
