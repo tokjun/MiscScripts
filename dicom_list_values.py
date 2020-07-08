@@ -27,6 +27,9 @@ def main():
     parser.add_argument('-r', dest='recursive', action='store_const',
                         const=True, default=False,
                         help='search the source directory recursively')
+    parser.add_argument('-p', dest='printpath', action='store_const',
+                        const=True, default=False,
+                        help='print path')
     parser.add_argument('-o', dest='out', help='Output file (CSV format)')
     
     args = parser.parse_args()
@@ -56,9 +59,12 @@ def main():
     for root, dirs, files in os.walk(srcdir[0]):
         for file in files:
             #if file.endswith(""):
-            #print(os.path.join(root, file))
             values = getDICOMAttributes(os.path.join(root, file), tagNums)
             linestr = ''
+            
+            if args.printpath:
+                linestr = os.path.join(root, file) + ","
+            
             for value in values:
                 linestr = linestr + '"%s"' % value + ","
             if outputFile:
