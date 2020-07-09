@@ -30,6 +30,9 @@ def main():
     parser.add_argument('-p', dest='printpath', action='store_const',
                         const=True, default=False,
                         help='print path')
+    parser.add_argument('-c', dest='countfile', action='store_const',
+                        const=True, default=False,
+                        help='count files')
     parser.add_argument('-o', dest='out', help='Output file (CSV format)')
     
     args = parser.parse_args()
@@ -57,6 +60,9 @@ def main():
         print(linestr[0:-1])
 
     for root, dirs, files in os.walk(srcdir[0]):
+
+        count = 0
+        
         for file in files:
             #if file.endswith(""):
             values = getDICOMAttributes(os.path.join(root, file), tagNums)
@@ -64,14 +70,21 @@ def main():
             
             if args.printpath:
                 linestr = os.path.join(root, file) + ","
+
+            if len(values) > 0:
+                count = count + 1
             
             for value in values:
                 linestr = linestr + '"%s"' % value + ","
+                
             if outputFile:
                 f.write(linestr[0:-1] + '\n')
             else:
-                if linestr != '':
+                if linestr != '' and not args.countfile:
                     print(linestr[0:-1])
+
+        if args.countfile and count > 0:
+            print("%s, %d" % (root, count))
                 
         if args.recursive == False:
             break
