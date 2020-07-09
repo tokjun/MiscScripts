@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import pydicom
 from pydicom.data import get_testdata_files
