@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import os
 import sys
@@ -11,19 +11,34 @@ from pydicom.data import get_testdata_files
 
 
 #
-# Generate description string based on DICOM tags
+# Generate a description string based on DICOM tags
 #
-def generateDescription(path, tagDict):
+def generateDescription(path, tagDict, descPrefix):
 
     dataset = pydicom.dcmread(path, specific_tags=None)
-    newdesc = ''
+    newdesc = descPrefix
     
     for key in tagDict:
         tag = tagDict[key]
-        element = dataset[tag]
-        newdesc = newdesc + ' ' + key + '=' + str(element.value)
-        
+        try:
+            element = dataset[tag]
+            newdesc = newdesc + ' ' + key + '=' + str(element.value)
+        except KeyError:
+            print('generateDescription(): Tag %s not found.' % tag)
+            newdesc = newdesc + ' ' + key + '=NA'
+                    
     return newdesc
+
+#
+# Modify the description
+#
+def modifyDescription(src, dst, newdesc):
+    
+    dataset = pydicom.dcmread(src, specific_tags=None)
+    desc = dataset[0x0008,0x103e]
+    desc.value = newdesc
+    dataset.save_as(dst)
+
 
 def main():
     
@@ -37,14 +52,19 @@ def main():
     parser.add_argument('-r', dest='recursive', action='store_const',
                         const=True, default=False,
                         help='search the source directory recursively')
+    parser.add_argument('-p', dest='prefix', default=None, help='Description prefix')
 
     args = parser.parse_args()
     srcdir = args.src
     dstdir = args.dst
+    prefix = args.prefix
     tagDict = {}
 
     if not os.path.isdir(dstdir[0]):
         sys.exit("Error: the destination directory does not exist.")
+
+    if prefix == '':
+        prefix = 'IMAGE'
         
     # Convert tags (e.g. "0020,000E=XXX") to dictionary ( {0x0020000E: XXXX})
     for tag in args.tags:
@@ -59,21 +79,23 @@ def main():
     for root, dirs, files in os.walk(srcdir[0]):
         for file in files:
             filepath = os.path.join(root, file)
-            newdesc = generateDescription(filepath, tagDict)
-            print (newdesc)
+            newdesc = generateDescription(filepath, tagDict, prefix)
+            print ()
             
-            #newfilepath = os.path.join(dstdir[0], file)
-            #dstfilepath = ''
-            #if os.path.exists(newfilepath):
-            #    filename, file_extension = os.path.splitext(file)
-            #    newfilename = filename + '_%04d' % postfix + file_extension
-            #    postfix = postfix + 1
-            #    dstfilepath = os.path.join(dstdir[0], newfilename)
-            #else:
-            #    dstfilepath = os.path.join(dstdir[0], file)
+            newfilepath = os.path.join(dstdir[0], file)
+            dstfilepath = ''
+            if os.path.exists(newfilepath):
+                filename, file_extension = os.path.splitext(file)
+                newfilename = filename + '_%04d' % postfix + file_extension
+                postfix = postfix + 1
+                dstfilepath = os.path.join(dstdir[0], newfilename)
+            else:
+                dstfilepath = os.path.join(dstdir[0], file)
             
-            #print("Copying: %s" % filepath)
+            print("Exporting to %s with a new description '%s'." % (dstfilepath, newdesc))
             #shutil.copy(filepath, dstfilepath)
+            
+            modifyDescription(filepath, dstfilepath, newdesc)
                 
         if args.recursive == False:
             break
