@@ -28,9 +28,10 @@ def getDICOMAttribute(path, tag):
 # Convert attribute to folder name (Remove special characters that cannot be
 # included in a path name)
 #
-def removeSpecialCharacter(str):
+def removeSpecialCharacter(v):
 
-    removed = str.translate ({ord(c): "-" for c in "!@#$%^&*()[]{};:,./<>?\|`~-=_+"})
+    input = str(v) # Make sure that the input parameter is a 'str' type.
+    removed = input.translate ({ord(c): "-" for c in "!@#$%^&*()[]{};:/<>?\|`="})
 
     return removed
 
