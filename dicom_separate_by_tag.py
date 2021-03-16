@@ -52,7 +52,7 @@ def loadDirectoryNames(filename):
 #
 # extract DICOM files by Tag, and return the list of attributes ( = names of subfoders)
 #
-def extractDICOMByTag(srcDir, dstDir, tagList, fRecursive, fMove, dirDict):
+def extractDICOMByTag(srcDir, dstDir, tagList, fRecursive, fMove, dirDict, fPreserve):
 
     postfix = 0
     attrList = []
@@ -72,17 +72,27 @@ def extractDICOMByTag(srcDir, dstDir, tagList, fRecursive, fMove, dirDict):
         for file in files:
             srcFilePath = os.path.join(root, file)
           
-            attr = getDICOMAttribute(srcFilePath, tag)
+            attr = str(getDICOMAttribute(srcFilePath, tag))
             if attr == None:
                 print("The image does not contain tag: %s" % tag)
                 continue
-            newFolderName = removeSpecialCharacter(attr)            
+            newFolderName = removeSpecialCharacter(str(attr))
             if dirDict:
                 if attr in dirDict:
                     newFolderName = dirDict[attr]
-                
-            dstSubDirPath= os.path.join(dstDir, newFolderName)
-            dstFilePath = os.path.join(dstSubDirPath, file)
+                    
+            dstFilePath=''
+            dstSubDirPath=''
+            if fPreserve:
+                # Preserve the input folder structure, (when used with the recursive option)
+                relPath = os.path.relpath(root, srcDir)
+                dstSubDirPath = os.path.join(dstDir, relPath)
+                dstSubDirPath = os.path.join(dstSubDirPath, newFolderName)
+                dstFilePath = os.path.join(dstSubDirPath, file)
+            else:
+                # Use a flat folder structure under the destinatio folder
+                dstSubDirPath= os.path.join(dstDir, newFolderName)
+                dstFilePath = os.path.join(dstSubDirPath, file)
 
             ## Add the attribute to the tag list
             if not (attr in attrList):
@@ -113,7 +123,7 @@ def extractDICOMByTag(srcDir, dstDir, tagList, fRecursive, fMove, dirDict):
         newDirName = removeSpecialCharacter(attr)
         newSrcDir= os.path.join(dstDir, newDirName)
         newDstDir= os.path.join(dstDir, newDirName)
-        extractDICOMByTag(newSrcDir, newDstDir, tags, fRecursive, True, dirDict)
+        extractDICOMByTag(newSrcDir, newDstDir, tags, fRecursive, True, dirDict, fRecursive)
 
         
 def main():
@@ -128,17 +138,20 @@ def main():
     parser.add_argument('-r', dest='recursive', action='store_const',
                         const=True, default=False,
                         help='search the source directory recursively')
+    parser.add_argument('-p', dest='preserve', action='store_const',
+                        const=True, default=False,
+                        help=' preserve the input folder structure (should be used with -r)')
     parser.add_argument('-M', dest='move', action='store_const',
                         const=True, default=False,
                         help='move file instead of copying')
-    parser.add_argument('-d', dest='dic', default=None, help='dictionary for directory names (CSV)')
+    parser.add_argument('-d', dest='dic', default=None, help='dictionary for directory names (in a space-separated-variables file)')
 
     args = parser.parse_args()
     srcdir = args.src
     dstdir = args.dst
     tagDict = {}
-    dirDict = None
     dirDictFile = args.dic
+    dirDict = None
 
     # Load dictionary file
     if dirDictFile:
@@ -147,7 +160,7 @@ def main():
     # Make the destination directory, if it does not exists.
     os.makedirs(dstdir[0], exist_ok=True)
 
-    extractDICOMByTag(srcdir[0], dstdir[0], args.tags, args.recursive, args.move, dirDict)
+    extractDICOMByTag(srcdir[0], dstdir[0], args.tags, args.recursive, args.move, dirDict, args.preserve)
 
         
 
