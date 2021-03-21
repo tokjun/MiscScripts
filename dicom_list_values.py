@@ -8,7 +8,11 @@ import os
 
 def getDICOMAttributes(path, tagNums):
 
-    dataset = pydicom.dcmread(path, specific_tags=None)
+    try:
+        dataset = pydicom.dcmread(path, specific_tags=None)
+    except pydicom.errors.InvalidDicomError:
+        print("getDICOMAttributes(path, tagNums): Error.")
+        return None
     attrs = []
 
     for tagNum in tagNums:
@@ -65,7 +69,12 @@ def main():
         
         for file in files:
             #if file.endswith(""):
+            print (file)
             values = getDICOMAttributes(os.path.join(root, file), tagNums)
+            if values == None:
+                print ("Error in " + os.path.join(root, file))
+                continue
+            
             linestr = ''
             
             if args.printpath:
