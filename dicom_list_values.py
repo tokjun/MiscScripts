@@ -69,7 +69,6 @@ def main():
         
         for file in files:
             #if file.endswith(""):
-            print (file)
             values = getDICOMAttributes(os.path.join(root, file), tagNums)
             if values == None:
                 print ("Error in " + os.path.join(root, file))
