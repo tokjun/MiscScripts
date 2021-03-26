@@ -16,7 +16,13 @@ from pydicom.data import get_testdata_files
 #
 def getDICOMAttribute(path, tag):
 
-    dataset = pydicom.dcmread(path, specific_tags=None)
+    dataset = None
+    try:
+        dataset = pydicom.dcmread(path, specific_tags=None)
+    except pydicom.errors.InvalidDicomError:
+        print("Error: Invalid DICOM file: " + path)
+        return None
+    
     key = tag.replace(',', '')
     if key in dataset:
         element = dataset[tag.replace(',', '')]
